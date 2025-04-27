@@ -1,1 +1,3 @@
-# HowToReplicationPostgreSQL
+# Инструкция по репликации в Postgre
+
+## Логическая репликация

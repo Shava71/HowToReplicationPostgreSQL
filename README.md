@@ -2,7 +2,7 @@
 
 ### Перед прочтением инструкции советую ознамоиться со [статьёй](https://habr.com/ru/articles/514500/) с целью понимания, что такое репликация
 
-## Логическая репликация
+## Логическая репликация [WAL]
 Шаги установки:
 1. Установка логического декодирования. Переходим по пути (для собственного удобства опишу полный путь для MacOS): ```/Library/PostgreSQL/17/data```. Открываем файл ```postgresql.conf``` и вписываем:
     ```
@@ -74,6 +74,26 @@
   
 8. Не забудьте избавиться от слота, который вам больше не нужен, чтобы остановить его поглощение. <br/>
     ```SELECT pg_drop_replication_slot('replication_slot');```
+
+9. Создайте пользователя ```replication```, чтобы через него дополнительный сервер мог подключаться к основному: <br/>
+    ```CREATE ROLE replication WITH REPLICATION PASSWORD '<superpassrowd>' LOGIN;```
+
+10. В файле ```pg_hba.conf``` разрешаем подключение этому пользователю (путь к нему можно найти при помощи запроса ```SHOW hba_file;```: <br/>
+    ```
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    host    replication     replication     192.168.233.0/24         md5
+    ```
+
+11. Перезапускаем postgresql
+12. Переходим в БД, которая будет подключаться к публикации
+13. Создаём подписку: <br/>
+    ```
+    CREATE SUBSCRIPTION name_sub
+    CONNECTION 'host=localhost port=**** dbname=DB user=replication password=...'
+    PUBLICATION name_pub;
+    ```
+
+
    
 
 

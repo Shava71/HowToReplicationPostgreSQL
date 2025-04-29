@@ -77,16 +77,18 @@
 
 9. Создайте пользователя ```replication```, чтобы через него дополнительный сервер мог подключаться к основному: <br/>
     ```CREATE ROLE replication WITH REPLICATION PASSWORD '<superpassrowd>' LOGIN;```
+   * Необходимо так же выделить права данной роли на чтение таблиц, на которые была зарегестрирована подписка
+    ```GRANT SELECT ON [(ALL TABLES)|table_name] IN SCHEMA public TO replication;```
 
-10. В файле ```pg_hba.conf``` разрешаем подключение этому пользователю (путь к нему можно найти при помощи запроса ```SHOW hba_file;```: <br/>
+11. В файле ```pg_hba.conf``` разрешаем подключение этому пользователю (путь к нему можно найти при помощи запроса ```SHOW hba_file;```: <br/>
     ```
     # TYPE  DATABASE        USER            ADDRESS                 METHOD
     host    replication     replication     192.168.233.0/24         md5
     ```
 
-11. Перезапускаем postgresql
-12. Переходим в БД, которая будет подключаться к публикации
-13. Создаём подписку: <br/>
+12. Перезапускаем postgresql
+13. Переходим в БД, которая будет подключаться к публикации
+14. Создаём подписку: <br/>
     ```
     CREATE SUBSCRIPTION name_sub
     CONNECTION 'host=localhost port=**** dbname=DB user=replication password=...'

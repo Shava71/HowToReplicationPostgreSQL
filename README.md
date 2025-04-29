@@ -47,6 +47,33 @@
     pub     | public     | table3
     (3 rows)
     ```
-   С этого момента наша публикация ```pub` будет отслеживать изменения всех таблиц в базе данных ```psql-stream```.
+   С этого момента наша публикация ```pub``` будет отслеживать изменения всех таблиц в базе данных ```psql-stream```.
+
+7. Заполним одну из таблиц некоторыми данными. <br/>
+   Проверим содержимое в WAL при помощи запроса: <br/>
+   ```SELECT * FROM pg_logical_slot_get_changes('replication_slot', NULL, NULL);```
+   OUTPUT:
+   ```
+      lsn    | xid  |                          data                          
+    -----------+------+--------------------------------------------------------
+     0/19EA2C0 | 1045 | BEGIN 1045
+     0/19EA2C0 | 1045 | table public.t: INSERT: id[integer]:1 name[text]:51459cbc211647e7b31c8720
+     0/19EA300 | 1045 | table public.t: INSERT: id[integer]:2 name[text]:51459cbc211647e7b31c8720
+     0/19EA340 | 1045 | table public.t: INSERT: id[integer]:3 name[text]:51459cbc211647e7b31c8720
+     0/19EA380 | 1045 | table public.t: INSERT: id[integer]:4 name[text]:51459cbc211647e7b31c8720
+     0/19EA3C0 | 1045 | table public.t: INSERT: id[integer]:5 name[text]:51459cbc211647e7b31c8720
+     0/19EA400 | 1045 | table public.t: INSERT: id[integer]:6 name[text]:51459cbc211647e7b31c8720
+     0/19EA440 | 1045 | table public.t: INSERT: id[integer]:7 name[text]:51459cbc211647e7b31c8720
+     0/19EA480 | 1045 | table public.t: INSERT: id[integer]:8 name[text]:51459cbc211647e7b31c8720
+     0/19EA4C0 | 1045 | table public.t: INSERT: id[integer]:9 name[text]:51459cbc211647e7b31c8720
+     0/19EA500 | 1045 | table public.t: INSERT: id[integer]:10 name[text]:51459cbc211647e7b31c8720
+     0/19EA5B0 | 1045 | COMMIT 1045
+   ```
+   * ```pg_logical_slot_peek_changes``` — это ещё одна команда PostgreSQL для просмотра изменений из записей WAL без их поглощения. Поэтому многократный вызов команды ```pg_logical_slot_peek_changes``` будет возвращать один и тот же результат.
+   * В свою очередь, ```pg_logical_slot_get_changes``` возвращает результаты только при первом вызове. Последующие вызовы ```pg_logical_slot_get_changes``` возвращают пустые наборы результатов. Это означает, что при выполнении команды ```get``` результаты обрабатываются и удаляются, что значительно расширяет наши возможности по написанию логики использования этих событий для создания реплики таблицы.
+  
+8. Не забудьте избавиться от слота, который вам больше не нужен, чтобы остановить его поглощение. <br/>
+    ```SELECT pg_drop_replication_slot('replication_slot');```
+   
 
 

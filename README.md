@@ -2,7 +2,7 @@
 
 ### Перед прочтением инструкции советую ознамоиться со [статьёй](https://habr.com/ru/articles/514500/) с целью понимания, что такое репликация
 
-## Логическая репликация [WAL]
+<details><summary>## Логическая репликация [WAL]</summary>
 Шаги установки:
 1. Установка логического декодирования. Переходим по пути (для собственного удобства опишу полный путь для MacOS): ```/Library/PostgreSQL/17/data```. Открываем файл ```postgresql.conf``` и вписываем:
     ```
@@ -87,13 +87,21 @@
     ```
 
 12. Перезапускаем postgresql
-13. Переходим в БД, которая будет подключаться к публикации
-14. Создаём подписку: <br/>
+13. В БД, на основе котороый будет происходить репликация, создаём её:
+    ```
+    CREATE PUBLICATION name_pub
+    FOR TABLE public.table_name
+    WITH (publish = 'insert, update, delete, truncate'); -- операции, которые будут разрешены
+    ```
+15. Переходим в БД, которая будет подключаться к публикации
+16. Создаём подписку: <br/>
     ```
     CREATE SUBSCRIPTION name_sub
     CONNECTION 'host=localhost port=**** dbname=DB user=replication password=...'
-    PUBLICATION name_pub;
+    PUBLICATION name_pub
+    WITH (copy_data = true);
     ```
+</details>
 
 
    
